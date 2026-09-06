@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "7vo45Od2cFc=",
+  "success": true,
+  "projectFilePath": "G:\\SolidWorksCycloidalAddin\\src\\CycloSketchAddin\\CycloSketchAddin.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\babst\\.nuget\\packages\\solidworks.interop.sldworks\\32.1.0\\solidworks.interop.sldworks.32.1.0.nupkg.sha512",
+    "C:\\Users\\babst\\.nuget\\packages\\solidworks.interop.swconst\\32.1.0\\solidworks.interop.swconst.32.1.0.nupkg.sha512",
+    "C:\\Users\\babst\\.nuget\\packages\\solidworks.interop.swpublished\\32.1.0\\solidworks.interop.swpublished.32.1.0.nupkg.sha512"
+  ],
+  "logs": []
+}
