@@ -9,3 +9,4 @@ G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\bin\Release\net48\SolidWorks.In
 G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\obj\Release\net48\CycloSke.4632605F.Up2Date
 G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\obj\Release\net48\CycloSketchAddin.dll
 G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\obj\Release\net48\CycloSketchAddin.pdb
+G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\obj\Release\net48\CycloSketchAddin.sourcelink.json
