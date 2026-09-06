@@ -86,7 +86,7 @@ public sealed class CycloPropertyManagerPage
         pnlNecessary.Controls.Add(btnTestView);
 
         var picNecessary = CreatePreviewImageBox(
-            new[] {  "preview_necessary_params.png" },
+            new[] {  "preview_necessary_params_V2.jpg" },
             BuildNecessaryFallbackImage,
             700,
             205);
@@ -102,7 +102,7 @@ public sealed class CycloPropertyManagerPage
         var numPlotPerTooth = CreateIntField(gbNecessary, "Cycloidal curve plot per tooth", defaults.PlotPerTooth, 5, 2000);
 
         var picOptional = CreatePreviewImageBox(
-            new[] {  "preview_optional_params.png" },
+            new[] {  "preview_optional_params_V2.jpg" },
             BuildOptionalFallbackImage,
             700,
             205);
@@ -135,7 +135,7 @@ public sealed class CycloPropertyManagerPage
         var numOutputPosDia = CreateDoubleField(gbAroundToOutput, "Pin position diameter [mm]", defaults.OutputPinPositionDiaMm, 0.001M, 100000M, 3);
 
         var picDetailed = CreatePreviewImageBox(
-            new[] { "preview_detailed_settings.png", "cyclo_Discription_Image_opt.png", "preview_optional_params.png" },
+            new[] { "preview_detailed_settings_V2.jpg", "cyclo_Discription_Image_opt.png", "preview_optional_params_V2.jpg" },
             BuildDetailedFallbackImage,
             700,
             205);
