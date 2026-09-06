@@ -22,4 +22,11 @@
     <PackageReference Include="SolidWorks.Interop.swpublished" Version="32.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="assets\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>assets\%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -10,3 +10,7 @@ G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\obj\Release\net48\CycloSke.4632
 G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\obj\Release\net48\CycloSketchAddin.dll
 G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\obj\Release\net48\CycloSketchAddin.pdb
 G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\obj\Release\net48\CycloSketchAddin.sourcelink.json
+G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\bin\Release\net48\assets\cyclo_Discription_Image_nec.png
+G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\bin\Release\net48\assets\cyclo_Discription_Image_opt.png
+G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\bin\Release\net48\assets\preview_necessary_params.png
+G:\SolidWorksCycloidalAddin\src\CycloSketchAddin\bin\Release\net48\assets\preview_optional_params.png

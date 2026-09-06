@@ -18,20 +18,30 @@ public sealed class SketchGenerator
     public void Generate(CycloParams p)
     {
         var sketchMgr = _model.SketchManager;
+        const double phaseA = 0.0;
+        double phaseB = Math.PI;
 
-        CreateReferenceSketch(sketchMgr, SketchNamingService.RefAxes);
-        CreateCycloProfileSketch(sketchMgr, p, SketchNamingService.CycloProfile);
+        CreateCycloProfileSketch(sketchMgr, p, SketchNamingService.CycloProfileA, +p.EccentricMm, phaseA);
+        CreateCycloProfileSketch(sketchMgr, p, SketchNamingService.CycloProfileB180, -p.EccentricMm, phaseB);
+
+        CreateRingPinsSketch(sketchMgr, p, SketchNamingService.RingPinsReference);
 
         if (p.DrawCenterHole)
-            CreateCenterHoleSketch(sketchMgr, p, SketchNamingService.CenterBore);
+        {
+            CreateCenterHoleSketch(sketchMgr, p, SketchNamingService.CenterBoreA, +p.EccentricMm);
+            CreateCenterHoleSketch(sketchMgr, p, SketchNamingService.CenterBoreB180, -p.EccentricMm);
+        }
 
         if (p.DrawAroundHoles)
-            CreateAroundHolesSketch(sketchMgr, p, SketchNamingService.OutputHoles);
-
-        CreateRingPinsSketch(sketchMgr, p, SketchNamingService.RingPins);
+        {
+            CreateAroundHolesSketch(sketchMgr, p, SketchNamingService.OutputHolesDiscA, +p.EccentricMm, phaseA);
+            CreateAroundHolesSketch(sketchMgr, p, SketchNamingService.OutputHolesDiscB180, -p.EccentricMm, phaseB);
+        }
 
         if (p.DrawOutputDiskPins)
-            CreateOutputPinsSketch(sketchMgr, p, SketchNamingService.OutputPins);
+            CreateOutputPinsSketch(sketchMgr, p, SketchNamingService.OutputPinsDisc);
+
+        CreateReferenceSketch(sketchMgr, SketchNamingService.ReferenceAxes);
 
         _model.ClearSelection2(true);
         _model.GraphicsRedraw2();
@@ -45,11 +55,11 @@ public sealed class SketchGenerator
         EndAndNameSketch(sketchName);
     }
 
-    private void CreateCycloProfileSketch(SketchManager sketchMgr, CycloParams p, string sketchName)
+    private void CreateCycloProfileSketch(SketchManager sketchMgr, CycloParams p, string sketchName, double centerOffsetMm, double phaseShiftRad)
     {
         StartSketch();
 
-        var pts = CycloGeometry.BuildCycloidalParallelCurvePoints(p);
+        var pts = CycloGeometry.BuildCycloidalParallelCurvePoints(p, centerOffsetMm, phaseShiftRad);
         var coords = new double[(pts.Count) * 3];
         for (int i = 0; i < pts.Count; i++)
         {
@@ -62,24 +72,24 @@ public sealed class SketchGenerator
         EndAndNameSketch(sketchName);
     }
 
-    private void CreateCenterHoleSketch(SketchManager sketchMgr, CycloParams p, string sketchName)
+    private void CreateCenterHoleSketch(SketchManager sketchMgr, CycloParams p, string sketchName, double centerOffsetMm)
     {
         StartSketch();
-        sketchMgr.CreateCircleByRadius(UnitConverter.MmToM(p.EccentricMm), 0, 0, UnitConverter.MmToM(p.CenterHoleDiaMm * 0.5));
+        sketchMgr.CreateCircleByRadius(UnitConverter.MmToM(centerOffsetMm), 0, 0, UnitConverter.MmToM(p.CenterHoleDiaMm * 0.5));
         EndAndNameSketch(sketchName);
     }
 
-    private void CreateAroundHolesSketch(SketchManager sketchMgr, CycloParams p, string sketchName)
+    private void CreateAroundHolesSketch(SketchManager sketchMgr, CycloParams p, string sketchName, double centerOffsetMm, double phaseShiftRad)
     {
         StartSketch();
 
-        double cx0 = UnitConverter.MmToM(p.EccentricMm);
+        double cx0 = UnitConverter.MmToM(centerOffsetMm);
         double posR = UnitConverter.MmToM(p.AroundHolePositionDiaMm * 0.5);
         double holeR = UnitConverter.MmToM(p.AroundHoleDiaMm * 0.5);
 
         for (int i = 0; i < p.AroundHoleNum; i++)
         {
-            double t = 2.0 * Math.PI * (i / (double)p.AroundHoleNum);
+            double t = (2.0 * Math.PI * (i / (double)p.AroundHoleNum)) + phaseShiftRad;
             sketchMgr.CreateCircleByRadius(cx0 + posR * Math.Cos(t), posR * Math.Sin(t), 0, holeR);
         }
 

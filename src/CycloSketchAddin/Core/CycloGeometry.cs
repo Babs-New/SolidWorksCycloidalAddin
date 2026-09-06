@@ -8,6 +8,11 @@ public static class CycloGeometry
 {
     public static IReadOnlyList<PointF> BuildCycloidalParallelCurvePoints(CycloParams p)
     {
+        return BuildCycloidalParallelCurvePoints(p, p.EccentricMm, 0.0);
+    }
+
+    public static IReadOnlyList<PointF> BuildCycloidalParallelCurvePoints(CycloParams p, double centerOffsetMm, double phaseShiftRad)
+    {
         int ringPinNum = p.ReductionRatio + 1;
         int troToothNum = ringPinNum - 1;
         int samples = Math.Max(100, p.ReductionRatio * p.PlotPerTooth);
@@ -25,8 +30,8 @@ public static class CycloGeometry
         var result = new List<PointF>(samples + 1);
         for (int i = 0; i <= samples; i++)
         {
-            double t = (2.0 * Math.PI * i) / samples;
-            double x = Fxp(t, rc, rm, rd, d) + rd;
+            double t = ((2.0 * Math.PI * i) / samples) + phaseShiftRad;
+            double x = Fxp(t, rc, rm, rd, d) + centerOffsetMm;
             double y = Fyp(t, rc, rm, rd, d);
             result.Add(new PointF((float)x, (float)y));
         }
