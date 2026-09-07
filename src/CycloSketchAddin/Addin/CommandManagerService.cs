@@ -11,18 +11,21 @@ namespace CycloSketchAddin.Addin;
 
 public sealed class CommandManagerService
 {
-    private const int MainCmdGroupId = 5;
+    // Unique group id to avoid collisions with other add-ins/commands.
+    private const int MainCmdGroupId = 871806;
     private const int MainCmdId = 1;
 
     private readonly SldWorks _app;
     private readonly int _cookie;
     private readonly string _callbackMethodName;
+    private readonly string _enableMethodName;
 
-    public CommandManagerService(SldWorks app, int cookie, string callbackMethodName)
+    public CommandManagerService(SldWorks app, int cookie, string callbackMethodName, string enableMethodName)
     {
         _app = app;
         _cookie = cookie;
         _callbackMethodName = callbackMethodName;
+        _enableMethodName = enableMethodName;
     }
 
     public int CreateUi()
@@ -51,7 +54,7 @@ public sealed class CommandManagerService
             "Create Cyclo Reducer",
             0,
             _callbackMethodName,
-            string.Empty,
+            _enableMethodName,
             MainCmdId,
             (int)swCommandItemType_e.swMenuItem | (int)swCommandItemType_e.swToolbarItem
         );

@@ -32,7 +32,7 @@ public sealed class SwAddin : ISwAddin
 
         _fallbackUi = new CycloPropertyManagerPage(GenerateSketches);
         _nativeUi = new CycloPropertyManagerPageNative(_app, _cookie, GenerateSketches, () => _fallbackUi.Show());
-        _commandManager = new CommandManagerService(_app, _cookie, nameof(OnCreateCycloReducer));
+        _commandManager = new CommandManagerService(_app, _cookie, nameof(OnCreateCycloReducer), nameof(OnCreateCycloReducerEnable));
         _commandManager.CreateUi();
 
         _app.SendMsgToUser2("CycloSketch Add-In loaded.",
@@ -53,7 +53,21 @@ public sealed class SwAddin : ISwAddin
 
     public void OnCreateCycloReducer()
     {
-        _fallbackUi?.Show();
+        try
+        {
+            _fallbackUi?.Show();
+        }
+        catch (Exception ex)
+        {
+            _app?.SendMsgToUser2($"UI error: {ex.Message}",
+                (int)swMessageBoxIcon_e.swMbWarning,
+                (int)swMessageBoxBtn_e.swMbOk);
+        }
+    }
+
+    public int OnCreateCycloReducerEnable()
+    {
+        return 1;
     }
 
     public bool GenerateSketches(CycloParams p)

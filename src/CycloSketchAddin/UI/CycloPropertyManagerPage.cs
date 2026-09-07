@@ -14,6 +14,7 @@ public sealed class CycloPropertyManagerPage
     private const int InitialContentWidth = 900;
     private const int InitialImageHeight = 290;
     private readonly Func<CycloParams, bool> _onGenerate;
+    private Form? _activeForm;
 
     public CycloPropertyManagerPage(Func<CycloParams, bool> onGenerate)
     {
@@ -22,9 +23,15 @@ public sealed class CycloPropertyManagerPage
 
     public void Show()
     {
+        if (_activeForm != null && !_activeForm.IsDisposed)
+        {
+            ShowAndFocusForm(_activeForm);
+            return;
+        }
+
         var defaults = new CycloParams();
 
-        using var form = new Form
+        var form = new Form
         {
             Text = "Create Cycloidal Reducer Sketches",
             StartPosition = FormStartPosition.CenterScreen,
@@ -35,6 +42,15 @@ public sealed class CycloPropertyManagerPage
             MaximizeBox = true,
             MinimizeBox = true,
             BackColor = Color.FromArgb(244, 247, 252)
+        };
+        _activeForm = form;
+        form.FormClosing += (_, e) =>
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                form.Hide();
+            }
         };
 
         var appIcon = AppWindowIcon.TryGetIcon();
@@ -345,7 +361,40 @@ public sealed class CycloPropertyManagerPage
         form.Controls.Add(header);
         form.Controls.Add(panel);
 
-        form.ShowDialog();
+        ShowAndFocusForm(form);
+    }
+
+    private static void ShowAndFocusForm(Form form)
+    {
+        void showImpl()
+        {
+            if (form.IsDisposed) return;
+
+            if (form.WindowState == FormWindowState.Minimized)
+                form.WindowState = FormWindowState.Normal;
+
+            if (!form.Visible)
+                form.Show();
+
+            form.BringToFront();
+            form.Activate();
+        }
+
+        if (form.IsHandleCreated && form.InvokeRequired)
+        {
+            try
+            {
+                form.BeginInvoke((Action)showImpl);
+            }
+            catch
+            {
+                // If invoking fails, the next button click will retry with a fresh callback cycle.
+            }
+
+            return;
+        }
+
+        showImpl();
     }
 
     private static void DrawTabHeader(TabControl tabs, DrawItemEventArgs e)

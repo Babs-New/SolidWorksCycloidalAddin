@@ -120,6 +120,49 @@ SolidWorks is locking the DLL.
 
 Install the `.NET Framework 4.8 Developer Pack`, then run the install command again.
 
+### `dotnet --info` shows `Architecture: x86`
+
+If `dotnet --info` reports x86, but x64 is installed, use x64 dotnet explicitly.
+
+1. Check x64 SDK list:
+
+```powershell
+& "C:\Program Files\dotnet\dotnet.exe" --list-sdks
+```
+
+2. Check x64 runtime info:
+
+```powershell
+& "C:\Program Files\dotnet\dotnet.exe" --info
+```
+
+3. Temporary fix in current shell:
+
+```powershell
+$env:Path = "C:\Program Files\dotnet;$env:Path"
+where.exe dotnet
+dotnet --info
+```
+
+Expected: `C:\Program Files\dotnet\dotnet.exe` appears first and `Architecture: x64`.
+
+Note: `deploy_addin.ps1` already prefers x64 dotnet automatically when available.
+
+### Add-in button appears disabled or shows unexpected tooltip
+
+This is often a stale SolidWorks CommandManager cache or a command ID collision.
+
+1. Close SolidWorks.
+2. Re-run deployment:
+
+```powershell
+$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+Set-Location $RepoRoot
+powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
+```
+
+3. Start SolidWorks and re-enable the add-in in `Tools > Add-Ins`.
+
 ## Useful project paths
 
 - `src/CycloSketchAddin/CycloSketchAddin.csproj`
