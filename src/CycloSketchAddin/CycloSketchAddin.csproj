@@ -23,10 +23,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="assets\*.png">
+    <Content Include="assets\**\*.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>assets\%(Filename)%(Extension)</Link>
-    </None>
+      <TargetPath>assets\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </Content>
+    <Content Include="assets\**\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>assets\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </Content>
   </ItemGroup>
 
 </Project>

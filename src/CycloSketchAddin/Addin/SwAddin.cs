@@ -1,5 +1,8 @@
 using System;
+using System.Globalization;
+using System.Text;
 using System.Runtime.InteropServices;
+using System.IO;
 using CycloSketchAddin.Core;
 using CycloSketchAddin.SolidWorks;
 using CycloSketchAddin.UI;
@@ -85,11 +88,9 @@ public sealed class SwAddin : ISwAddin
         try
         {
             var generator = new SketchGenerator(model, new PlaneSelector());
-            generator.Generate(p);
+            var generatedSketches = generator.Generate(p);
 
-            _app.SendMsgToUser2("Cycloidal sketches generated.",
-                (int)swMessageBoxIcon_e.swMbInformation,
-                (int)swMessageBoxBtn_e.swMbOk);
+            GenerationSummaryDialog.Show(BuildGenerationSummary(p, generatedSketches));
             return true;
         }
         catch (Exception ex)
@@ -101,10 +102,61 @@ public sealed class SwAddin : ISwAddin
         }
     }
 
+    private static string BuildGenerationSummary(CycloParams p, System.Collections.Generic.IReadOnlyList<string> generatedSketches)
+    {
+        var culture = CultureInfo.InvariantCulture;
+        var sb = new StringBuilder();
+
+        sb.AppendLine("Cycloidal sketch generation succeeded.");
+        sb.AppendLine();
+        sb.AppendLine("Generated sketches:");
+        for (int i = 0; i < generatedSketches.Count; i++)
+            sb.AppendLine($"{i + 1}. {generatedSketches[i]}");
+
+        sb.AppendLine();
+        sb.AppendLine("Main parameters:");
+        sb.AppendLine($"Reduction ratio: {p.ReductionRatio.ToString(culture)}");
+        sb.AppendLine($"Eccentric amount [mm]: {p.EccentricMm.ToString("0.###", culture)}");
+        sb.AppendLine($"Ring pin diameter [mm]: {p.RingPinDiaMm.ToString("0.###", culture)}");
+        sb.AppendLine($"Ring pin pitch diameter [mm]: {p.RingPinPitchDiaMm.ToString("0.###", culture)}");
+        sb.AppendLine($"Cycloidal curve plot per tooth: {p.PlotPerTooth.ToString(culture)}");
+
+        sb.AppendLine();
+        sb.AppendLine("Options:");
+        sb.AppendLine($"Draw center hole: {p.DrawCenterHole}");
+        if (p.DrawCenterHole)
+            sb.AppendLine($"Center hole diameter [mm]: {p.CenterHoleDiaMm.ToString("0.###", culture)}");
+
+        sb.AppendLine($"Draw around holes: {p.DrawAroundHoles}");
+        if (p.DrawAroundHoles)
+        {
+            sb.AppendLine($"Around hole num: {p.AroundHoleNum.ToString(culture)}");
+            sb.AppendLine($"Around hole diameter [mm]: {p.AroundHoleDiaMm.ToString("0.###", culture)}");
+            sb.AppendLine($"Around hole position diameter [mm]: {p.AroundHolePositionDiaMm.ToString("0.###", culture)}");
+        }
+
+        sb.AppendLine($"Draw output disk pins: {p.DrawOutputDiskPins}");
+        if (p.DrawOutputDiskPins)
+        {
+            sb.AppendLine($"Link output pins to around holes: {p.LinkOutputPinsToAroundHoles}");
+            if (!p.LinkOutputPinsToAroundHoles)
+            {
+                sb.AppendLine($"Output pin num: {p.OutputPinNum.ToString(culture)}");
+                sb.AppendLine($"Output pin diameter [mm]: {p.OutputPinDiaMm.ToString("0.###", culture)}");
+                sb.AppendLine($"Output pin position diameter [mm]: {p.OutputPinPositionDiaMm.ToString("0.###", culture)}");
+            }
+        }
+
+        sb.AppendLine($"Separate sketches: {p.SeparateSketches}");
+        return sb.ToString();
+    }
+
     [ComRegisterFunction]
     public static void Register(Type t)
     {
         var guid = $"{{{t.GUID}}}";
+        var assemblyDir = Path.GetDirectoryName(t.Assembly.Location) ?? string.Empty;
+        var logoPath = Path.Combine(assemblyDir, "assets", "logo", "Cycloidal.png");
 
         Microsoft.Win32.Registry.SetValue(
             $@"HKEY_LOCAL_MACHINE\SOFTWARE\SolidWorks\Addins\{guid}",
@@ -127,6 +179,19 @@ public sealed class SwAddin : ISwAddin
             $@"HKEY_LOCAL_MACHINE\SOFTWARE\SolidWorks\Addins\{guid}",
             "Description",
             "Cycloidal Drive Sketch Generator");
+
+        if (File.Exists(logoPath))
+        {
+            Microsoft.Win32.Registry.SetValue(
+                $@"HKEY_LOCAL_MACHINE\SOFTWARE\SolidWorks\Addins\{guid}",
+                "Icon",
+                logoPath);
+
+            Microsoft.Win32.Registry.SetValue(
+                $@"HKEY_LOCAL_MACHINE\SOFTWARE\SolidWorks\Addins\{guid}",
+                "ToolbarImage",
+                logoPath);
+        }
     }
 
     [ComUnregisterFunction]

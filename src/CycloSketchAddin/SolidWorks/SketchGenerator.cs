@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using CycloSketchAddin.Core;
 using SolidWorks.Interop.sldworks;
 
@@ -15,36 +16,62 @@ public sealed class SketchGenerator
         _planeSelector = planeSelector;
     }
 
-    public void Generate(CycloParams p)
+    public IReadOnlyList<string> Generate(CycloParams p)
     {
         var sketchMgr = _model.SketchManager;
+        var names = SketchNamingService.Resolve(p);
+        var generated = new List<string>(9);
         const double phaseA = 0.0;
         double phaseB = Math.PI;
 
-        CreateCycloProfileSketch(sketchMgr, p, SketchNamingService.CycloProfileA, +p.EccentricMm, phaseA);
-        CreateCycloProfileSketch(sketchMgr, p, SketchNamingService.CycloProfileB180, -p.EccentricMm, phaseB);
-
-        CreateRingPinsSketch(sketchMgr, p, SketchNamingService.RingPinsReference);
+        // A-group first in the feature tree.
+        CreateCycloProfileSketch(sketchMgr, p, names.CycloProfileA, +p.EccentricMm, phaseA);
+        generated.Add(names.CycloProfileA);
 
         if (p.DrawCenterHole)
         {
-            CreateCenterHoleSketch(sketchMgr, p, SketchNamingService.CenterBoreA, +p.EccentricMm);
-            CreateCenterHoleSketch(sketchMgr, p, SketchNamingService.CenterBoreB180, -p.EccentricMm);
+            CreateCenterHoleSketch(sketchMgr, p, names.CenterBoreA, +p.EccentricMm);
+            generated.Add(names.CenterBoreA);
         }
 
         if (p.DrawAroundHoles)
         {
-            CreateAroundHolesSketch(sketchMgr, p, SketchNamingService.OutputHolesDiscA, +p.EccentricMm, phaseA);
-            CreateAroundHolesSketch(sketchMgr, p, SketchNamingService.OutputHolesDiscB180, -p.EccentricMm, phaseB);
+            CreateAroundHolesSketch(sketchMgr, p, names.OutputHolesDiscA, +p.EccentricMm, phaseA);
+            generated.Add(names.OutputHolesDiscA);
         }
 
-        if (p.DrawOutputDiskPins)
-            CreateOutputPinsSketch(sketchMgr, p, SketchNamingService.OutputPinsDisc);
+        // B-group second in the feature tree.
+        CreateCycloProfileSketch(sketchMgr, p, names.CycloProfileB180, -p.EccentricMm, phaseB);
+        generated.Add(names.CycloProfileB180);
 
-        CreateReferenceSketch(sketchMgr, SketchNamingService.ReferenceAxes);
+        if (p.DrawCenterHole)
+        {
+            CreateCenterHoleSketch(sketchMgr, p, names.CenterBoreB180, -p.EccentricMm);
+            generated.Add(names.CenterBoreB180);
+        }
+
+        if (p.DrawAroundHoles)
+        {
+            CreateAroundHolesSketch(sketchMgr, p, names.OutputHolesDiscB180, -p.EccentricMm, phaseB);
+            generated.Add(names.OutputHolesDiscB180);
+        }
+
+        // Shared sketches after A/B groups.
+        CreateRingPinsSketch(sketchMgr, p, names.RingPinsReference);
+        generated.Add(names.RingPinsReference);
+
+        if (p.DrawOutputDiskPins)
+        {
+            CreateOutputPinsSketch(sketchMgr, p, names.OutputPinsDisc);
+            generated.Add(names.OutputPinsDisc);
+        }
+
+        CreateReferenceSketch(sketchMgr, names.ReferenceAxes);
+        generated.Add(names.ReferenceAxes);
 
         _model.ClearSelection2(true);
         _model.GraphicsRedraw2();
+        return generated;
     }
 
     private void CreateReferenceSketch(SketchManager sketchMgr, string sketchName)

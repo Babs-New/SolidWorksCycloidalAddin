@@ -5,11 +5,14 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using CycloSketchAddin.Core;
+using CycloSketchAddin.SolidWorks;
 
 namespace CycloSketchAddin.UI;
 
 public sealed class CycloPropertyManagerPage
 {
+    private const int InitialContentWidth = 900;
+    private const int InitialImageHeight = 290;
     private readonly Func<CycloParams, bool> _onGenerate;
 
     public CycloPropertyManagerPage(Func<CycloParams, bool> onGenerate)
@@ -25,13 +28,21 @@ public sealed class CycloPropertyManagerPage
         {
             Text = "Create Cycloidal Reducer Sketches",
             StartPosition = FormStartPosition.CenterScreen,
-            Width = 800,
-            Height = 840,
-            FormBorderStyle = FormBorderStyle.FixedDialog,
-            MaximizeBox = false,
-            MinimizeBox = false,
+            Width = 1040,
+            Height = 900,
+            MinimumSize = new Size(920, 740),
+            FormBorderStyle = FormBorderStyle.Sizable,
+            MaximizeBox = true,
+            MinimizeBox = true,
             BackColor = Color.FromArgb(244, 247, 252)
         };
+
+        var appIcon = AppWindowIcon.TryGetIcon();
+        if (appIcon != null)
+        {
+            form.Icon = appIcon;
+            form.ShowIcon = true;
+        }
 
         var header = new Panel
         {
@@ -54,12 +65,16 @@ public sealed class CycloPropertyManagerPage
         var tabs = new TabControl
         {
             Dock = DockStyle.Fill,
-            Font = UiFont(11.5F, FontStyle.Regular)
+            Font = UiFont(11.5F, FontStyle.Regular),
+            DrawMode = TabDrawMode.OwnerDrawFixed,
+            ItemSize = new Size(220, 34),
+            SizeMode = TabSizeMode.Fixed
         };
+        tabs.DrawItem += (_, e) => DrawTabHeader(tabs, e);
 
-        var tabNecessary = new TabPage("Necessary param") { BackColor = Color.FromArgb(250, 252, 255) };
-        var tabOptional = new TabPage("optionary param") { BackColor = Color.FromArgb(250, 252, 255) };
-        var tabDetailed = new TabPage("Detailed setting") { BackColor = Color.FromArgb(250, 252, 255) };
+        var tabNecessary = new TabPage("Necessary Settings") { BackColor = Color.FromArgb(250, 252, 255) };
+        var tabOptional = new TabPage("Optional Settings") { BackColor = Color.FromArgb(250, 252, 255) };
+        var tabDetailed = new TabPage("Details Settings") { BackColor = Color.FromArgb(250, 252, 255) };
         tabs.TabPages.Add(tabNecessary);
         tabs.TabPages.Add(tabOptional);
         tabs.TabPages.Add(tabDetailed);
@@ -71,25 +86,11 @@ public sealed class CycloPropertyManagerPage
         tabOptional.Controls.Add(pnlOptional);
         tabDetailed.Controls.Add(pnlDetailed);
 
-        var btnTestView = new Button
-        {
-            Text = "Test view",
-            Width = 112,
-            Height = 31,
-            Font = UiFont(10.5F, FontStyle.Regular),
-            BackColor = Color.White,
-            ForeColor = Color.FromArgb(35, 35, 35),
-            FlatStyle = FlatStyle.Flat,
-            Margin = new Padding(0, 0, 0, 10)
-        };
-        btnTestView.FlatAppearance.BorderColor = Color.FromArgb(198, 206, 217);
-        pnlNecessary.Controls.Add(btnTestView);
-
         var picNecessary = CreatePreviewImageBox(
-            new[] {  "preview_necessary_params_V2.jpg" },
+            new[] {  "preview_necessary_params_V2.png" },
             BuildNecessaryFallbackImage,
-            700,
-            205);
+            InitialContentWidth,
+            InitialImageHeight);
         pnlNecessary.Controls.Add(picNecessary);
 
         var gbNecessary = CreateGroupBox("Necessary parameters", Color.FromArgb(40, 88, 140));
@@ -102,10 +103,10 @@ public sealed class CycloPropertyManagerPage
         var numPlotPerTooth = CreateIntField(gbNecessary, "Cycloidal curve plot per tooth", defaults.PlotPerTooth, 5, 2000);
 
         var picOptional = CreatePreviewImageBox(
-            new[] {  "preview_optional_params_V2.jpg" },
+            new[] {  "preview_optional_params_V2.png" },
             BuildOptionalFallbackImage,
-            700,
-            205);
+            InitialContentWidth,
+            InitialImageHeight);
         pnlOptional.Controls.Add(picOptional);
 
         var gbCenterHole = CreateGroupBox("Cycloidal gear center hole", Color.FromArgb(0, 122, 77));
@@ -135,10 +136,10 @@ public sealed class CycloPropertyManagerPage
         var numOutputPosDia = CreateDoubleField(gbAroundToOutput, "Pin position diameter [mm]", defaults.OutputPinPositionDiaMm, 0.001M, 100000M, 3);
 
         var picDetailed = CreatePreviewImageBox(
-            new[] { "preview_detailed_settings_V2.jpg", "cyclo_Discription_Image_opt.png", "preview_optional_params_V2.jpg" },
+            new[] { "preview_detailed_settings_V2.png", "cyclo_Discription_Image_opt.png", "preview_optional_params_V2.png" },
             BuildDetailedFallbackImage,
-            700,
-            205);
+            InitialContentWidth,
+            InitialImageHeight);
         pnlDetailed.Controls.Add(picDetailed);
 
         var gbDetailed = CreateGroupBox("Detailed setting", Color.FromArgb(86, 52, 135));
@@ -146,22 +147,63 @@ public sealed class CycloPropertyManagerPage
 
         var chkSeparateSketches = CreateCheckField(gbDetailed, "Separate sketch", defaults.SeparateSketches);
 
+        var gbSketchNames = CreateGroupBox("Sketch naming", Color.FromArgb(27, 92, 148));
+        pnlDetailed.Controls.Add(gbSketchNames);
+
+        var txtCycloProfileA = CreateTextField(gbSketchNames, "Cyclo profile A", SketchNamingService.CycloProfileA);
+        var txtCenterBoreA = CreateTextField(gbSketchNames, "Center bore A", SketchNamingService.CenterBoreA);
+        var txtOutputHolesA = CreateTextField(gbSketchNames, "Output holes A", SketchNamingService.OutputHolesDiscA);
+        var txtCycloProfileB = CreateTextField(gbSketchNames, "Cyclo profile B", SketchNamingService.CycloProfileB180);
+        var txtCenterBoreB = CreateTextField(gbSketchNames, "Center bore B", SketchNamingService.CenterBoreB180);
+        var txtOutputHolesB = CreateTextField(gbSketchNames, "Output holes B", SketchNamingService.OutputHolesDiscB180);
+        var txtRingPins = CreateTextField(gbSketchNames, "Ring pins reference", SketchNamingService.RingPinsReference);
+        var txtOutputPins = CreateTextField(gbSketchNames, "Output pins", SketchNamingService.OutputPinsDisc);
+        var txtReferenceAxes = CreateTextField(gbSketchNames, "Reference axes", SketchNamingService.ReferenceAxes);
+
+        var btnResetNames = new Button
+        {
+            Text = "Reset to default names",
+            Width = 220,
+            Height = 34,
+            Font = UiFont(10.5F, FontStyle.Regular),
+            BackColor = Color.White,
+            ForeColor = Color.FromArgb(35, 35, 35),
+            FlatStyle = FlatStyle.Flat,
+            Margin = new Padding(4, 8, 4, 8)
+        };
+        btnResetNames.FlatAppearance.BorderColor = Color.FromArgb(198, 206, 217);
+        EnsureGroupLayout(gbSketchNames).Controls.Add(btnResetNames);
+
+        btnResetNames.Click += (_, _) =>
+        {
+            txtCycloProfileA.Text = SketchNamingService.CycloProfileA;
+            txtCenterBoreA.Text = SketchNamingService.CenterBoreA;
+            txtOutputHolesA.Text = SketchNamingService.OutputHolesDiscA;
+            txtCycloProfileB.Text = SketchNamingService.CycloProfileB180;
+            txtCenterBoreB.Text = SketchNamingService.CenterBoreB180;
+            txtOutputHolesB.Text = SketchNamingService.OutputHolesDiscB180;
+            txtRingPins.Text = SketchNamingService.RingPinsReference;
+            txtOutputPins.Text = SketchNamingService.OutputPinsDisc;
+            txtReferenceAxes.Text = SketchNamingService.ReferenceAxes;
+        };
+
         var info = new Label
         {
             AutoSize = false,
+            Width = InitialContentWidth - 40,
             Height = 260,
-            Dock = DockStyle.Top,
+            Margin = new Padding(4),
             Padding = new Padding(10),
             Font = UiFont(10.5F, FontStyle.Regular),
             Text =
-                "Generated sketches (two-disc mode):\r\n" +
+                "Generated sketches (A first, then B):\r\n" +
                 "- SK_CYCLO_DISC_PROFILE_A\r\n" +
-                "- SK_CYCLO_DISC_PROFILE_B_180DEG\r\n" +
-                "- SK_RING_PINS_REFERENCE\r\n" +
                 "- SK_CENTER_BORE_A\r\n" +
-                "- SK_CENTER_BORE_B_180DEG\r\n" +
                 "- SK_OUTPUT_HOLES_DISC_A\r\n" +
+                "- SK_CYCLO_DISC_PROFILE_B_180DEG\r\n" +
+                "- SK_CENTER_BORE_B_180DEG\r\n" +
                 "- SK_OUTPUT_HOLES_DISC_B_180DEG\r\n" +
+                "- SK_RING_PINS_REFERENCE\r\n" +
                 "- SK_OUTPUT_PINS_DISC\r\n" +
                 "- SK_REFERENCE_AXES\r\n\r\n" +
                 "Disc A: +e\r\n" +
@@ -169,7 +211,11 @@ public sealed class CycloPropertyManagerPage
                 "Phase B: 180deg",
             ForeColor = Color.FromArgb(40, 40, 40)
         };
-        gbDetailed.Controls.Add(info);
+        EnsureGroupLayout(gbDetailed).Controls.Add(info);
+
+        AttachResponsiveLayout(pnlNecessary);
+        AttachResponsiveLayout(pnlOptional);
+        AttachResponsiveLayout(pnlDetailed);
 
         Action updateUi = () =>
         {
@@ -197,18 +243,24 @@ public sealed class CycloPropertyManagerPage
 
         updateUi();
 
-        var panel = new Panel { Dock = DockStyle.Bottom, Height = 64 };
+        var panel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 64,
+            FlowDirection = FlowDirection.RightToLeft,
+            Padding = new Padding(8, 12, 8, 8),
+            BackColor = Color.FromArgb(244, 247, 252)
+        };
         var btnGenerate = new Button
         {
             Text = "Generate",
             Width = 130,
             Height = 38,
-            Left = 500,
-            Top = 12,
             BackColor = Color.FromArgb(35, 122, 80),
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
-            Font = UiFont(11F, FontStyle.Bold)
+            Font = UiFont(11F, FontStyle.Bold),
+            Margin = new Padding(8, 0, 8, 0)
         };
         btnGenerate.FlatAppearance.BorderSize = 0;
 
@@ -217,12 +269,11 @@ public sealed class CycloPropertyManagerPage
             Text = "Cancel",
             Width = 130,
             Height = 38,
-            Left = 640,
-            Top = 12,
             BackColor = Color.FromArgb(110, 110, 110),
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
-            Font = UiFont(11F, FontStyle.Regular)
+            Font = UiFont(11F, FontStyle.Regular),
+            Margin = new Padding(8, 0, 8, 0)
         };
         btnCancel.FlatAppearance.BorderSize = 0;
 
@@ -251,7 +302,17 @@ public sealed class CycloPropertyManagerPage
                 OutputPinDiaMm = (double)numOutputDia.Value,
                 OutputPinPositionDiaMm = (double)numOutputPosDia.Value,
 
-                SeparateSketches = chkSeparateSketches.Checked
+                SeparateSketches = chkSeparateSketches.Checked,
+
+                CycloProfileASketchName = txtCycloProfileA.Text,
+                CycloProfileBSketchName = txtCycloProfileB.Text,
+                RingPinsReferenceSketchName = txtRingPins.Text,
+                CenterBoreASketchName = txtCenterBoreA.Text,
+                CenterBoreBSketchName = txtCenterBoreB.Text,
+                OutputHolesDiscASketchName = txtOutputHolesA.Text,
+                OutputHolesDiscBSketchName = txtOutputHolesB.Text,
+                OutputPinsDiscSketchName = txtOutputPins.Text,
+                ReferenceAxesSketchName = txtReferenceAxes.Text
             };
 
             if (!CycloValidator.TryValidate(p, out var error))
@@ -261,13 +322,6 @@ public sealed class CycloPropertyManagerPage
             }
 
             return p;
-        };
-
-        btnTestView.Click += (_, _) =>
-        {
-            var p = readParams();
-            if (p == null) return;
-            _ = _onGenerate(p);
         };
 
         btnGenerate.Click += (_, _) =>
@@ -284,14 +338,68 @@ public sealed class CycloPropertyManagerPage
 
         btnCancel.Click += (_, _) => form.Close();
 
-        panel.Controls.Add(btnGenerate);
         panel.Controls.Add(btnCancel);
+        panel.Controls.Add(btnGenerate);
 
         form.Controls.Add(tabs);
         form.Controls.Add(header);
         form.Controls.Add(panel);
 
         form.ShowDialog();
+    }
+
+    private static void DrawTabHeader(TabControl tabs, DrawItemEventArgs e)
+    {
+        bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+        var bounds = e.Bounds;
+
+        using var background = new SolidBrush(selected ? Color.FromArgb(36, 111, 170) : Color.FromArgb(232, 237, 244));
+        using var textBrush = new SolidBrush(selected ? Color.White : Color.FromArgb(44, 44, 44));
+        using var frame = new Pen(Color.FromArgb(182, 195, 214));
+
+        e.Graphics.FillRectangle(background, bounds);
+        e.Graphics.DrawRectangle(frame, bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
+
+        var format = new StringFormat
+        {
+            Alignment = StringAlignment.Center,
+            LineAlignment = StringAlignment.Center
+        };
+
+        e.Graphics.DrawString(tabs.TabPages[e.Index].Text, UiFont(10.5F, FontStyle.Bold), textBrush, bounds, format);
+    }
+
+    private static void AttachResponsiveLayout(FlowLayoutPanel panel)
+    {
+        void update()
+        {
+            int availableWidth = Math.Max(680, panel.ClientSize.Width - 28);
+
+            foreach (Control control in panel.Controls)
+            {
+                control.Width = availableWidth;
+
+                if (control is GroupBox group)
+                    ResizeGroupRows(group);
+            }
+        }
+
+        panel.SizeChanged += (_, _) => update();
+        update();
+    }
+
+    private static void ResizeGroupRows(GroupBox group)
+    {
+        var layout = EnsureGroupLayout(group);
+        int rowWidth = Math.Max(640, group.ClientSize.Width - 24);
+        foreach (Control child in layout.Controls)
+        {
+            if (child is TableLayoutPanel row)
+                row.Width = rowWidth;
+
+            if (child is Label label)
+                label.Width = rowWidth;
+        }
     }
 
     private static FlowLayoutPanel CreateTabPanel()
@@ -329,7 +437,7 @@ public sealed class CycloPropertyManagerPage
         var gb = new GroupBox
         {
             Text = title,
-            Width = 720,
+            Width = InitialContentWidth,
             AutoSize = true,
             Padding = new Padding(10, 24, 10, 10),
             ForeColor = accent,
@@ -360,7 +468,7 @@ public sealed class CycloPropertyManagerPage
         var row = new TableLayoutPanel
         {
             ColumnCount = 2,
-            Width = 690,
+            Width = InitialContentWidth - 30,
             Height = 40,
             Margin = new Padding(4)
         };
@@ -398,7 +506,7 @@ public sealed class CycloPropertyManagerPage
         var row = new TableLayoutPanel
         {
             ColumnCount = 2,
-            Width = 690,
+            Width = InitialContentWidth - 30,
             Height = 40,
             Margin = new Padding(4)
         };
@@ -455,7 +563,7 @@ public sealed class CycloPropertyManagerPage
         var row = new TableLayoutPanel
         {
             ColumnCount = 2,
-            Width = 690,
+            Width = InitialContentWidth - 30,
             Height = 40,
             Margin = new Padding(4)
         };
@@ -485,6 +593,42 @@ public sealed class CycloPropertyManagerPage
         layout.Controls.Add(row);
 
         return combo;
+    }
+
+    private static TextBox CreateTextField(Control groupBox, string label, string value)
+    {
+        var layout = EnsureGroupLayout(groupBox);
+
+        var row = new TableLayoutPanel
+        {
+            ColumnCount = 2,
+            Width = InitialContentWidth - 30,
+            Height = 40,
+            Margin = new Padding(4)
+        };
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58));
+
+        var lbl = new Label
+        {
+            Text = label,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Font = UiFont(10.5F, FontStyle.Regular),
+            ForeColor = Color.FromArgb(35, 35, 35)
+        };
+
+        var txt = new TextBox
+        {
+            Dock = DockStyle.Fill,
+            Text = value,
+            Font = UiFont(10.5F, FontStyle.Regular)
+        };
+
+        row.Controls.Add(lbl, 0, 0);
+        row.Controls.Add(txt, 1, 0);
+        layout.Controls.Add(row);
+        return txt;
     }
 
     private static PictureBox CreatePreviewImageBox(string[] fileNames, Func<int, int, Image> fallbackFactory, int width, int height)

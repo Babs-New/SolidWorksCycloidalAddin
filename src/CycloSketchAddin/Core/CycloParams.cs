@@ -24,4 +24,15 @@ public sealed class CycloParams
     public bool LinkOutputPinsToAroundHoles { get; set; } = true;
 
     public bool SeparateSketches { get; set; } = true;
+
+    // Optional custom names. If left blank, defaults from SketchNamingService are used.
+    public string CycloProfileASketchName { get; set; } = string.Empty;
+    public string CycloProfileBSketchName { get; set; } = string.Empty;
+    public string RingPinsReferenceSketchName { get; set; } = string.Empty;
+    public string CenterBoreASketchName { get; set; } = string.Empty;
+    public string CenterBoreBSketchName { get; set; } = string.Empty;
+    public string OutputHolesDiscASketchName { get; set; } = string.Empty;
+    public string OutputHolesDiscBSketchName { get; set; } = string.Empty;
+    public string OutputPinsDiscSketchName { get; set; } = string.Empty;
+    public string ReferenceAxesSketchName { get; set; } = string.Empty;
 }
