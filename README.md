@@ -1,165 +1,124 @@
 # CycloSketch Add-In for SolidWorks
 
-Open-source SolidWorks add-in to generate clean, parameter-driven cycloidal reducer sketches.
+Add-in SolidWorks pour generer des esquisses de reducteur cycloidal a partir de parametres.
 
-This project focuses first on robust sketch generation (not automatic 3D bodies), so users can extrude, assemble, and manufacture with their own workflow (3D printing, CNC, laser, etc.).
+Ce README est centre sur l'installation, afin qu'un utilisateur puisse deployer l'add-in et l'activer dans SolidWorks.
 
-## Features
+## Prerequis obligatoires
 
-- Tabbed UI with image previews and parameter validation
-- Two-disc cycloidal mode:
-- Disc A center offset: +e
-- Disc B center offset: -e
-- Disc B phase: 180deg
-- Optional center bores, around holes, and output pins
-- Fusion-like linking option:
-- `D_output_pin = D_around_hole - 2 * eccentric`
-
-## Generated Sketch Names
-
-- `SK_CYCLO_DISC_PROFILE_A`
-- `SK_CYCLO_DISC_PROFILE_B_180DEG`
-- `SK_RING_PINS_REFERENCE`
-- `SK_CENTER_BORE_A`
-- `SK_CENTER_BORE_B_180DEG`
-- `SK_OUTPUT_HOLES_DISC_A`
-- `SK_OUTPUT_HOLES_DISC_B_180DEG`
-- `SK_OUTPUT_PINS_DISC`
-- `SK_REFERENCE_AXES`
-
-## Requirements
-
-- Windows
-- SolidWorks 2025
+- Windows 10/11 x64
+- SolidWorks 2025 x64
 - .NET SDK 8.x
-- .NET Framework 4.8 Developer Pack
-- Visual Studio 2022 (recommended)
+- .NET Framework 4.8 Developer Pack (inclut RegAsm)
+- PowerShell 5.1+
+- Droits Administrateur Windows (necessaire pour l'enregistrement COM)
 
-## Repository Layout
+## Verifier les prerequis
 
-- `src/CycloSketchAddin/Addin`
-- `src/CycloSketchAddin/Core`
-- `src/CycloSketchAddin/SolidWorks`
-- `src/CycloSketchAddin/UI`
-- `src/CycloSketchAddin/assets`
-
-## Quick Start (Community Install)
-
-1. Clone or download this repository.
-2. Open `src/CycloSketchAddin/CycloSketchAddin.csproj` in Visual Studio.
-3. Build in `Release`.
-4. Close SolidWorks completely.
-5. Open PowerShell as Administrator.
-6. Run:
+Dans PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1
+dotnet --info
 ```
 
-7. Open SolidWorks.
-8. Go to `Tools > Add-Ins`.
-9. Enable `CycloSketch Add-In` (and Startup if desired).
+La commande doit repondre avec un SDK 8.x installe.
 
-## Manual Install (Alternative)
-
-1. Build the project:
+Verifier RegAsm:
 
 ```powershell
-Set-Location .\src\CycloSketchAddin
-dotnet build -c Release --nologo
+Test-Path "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe"
 ```
 
-2. Register the add-in DLL (Admin PowerShell):
+La commande doit retourner `True`.
+
+## Installation rapide (recommandee)
+
+1. Fermer SolidWorks.
+2. Ouvrir PowerShell en Administrateur.
+3. Aller a la racine du projet.
+4. Lancer le script de deploiement.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath ".\src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll"
-```
-
-## Using the Add-In
-
-1. Open a Part document (`.sldprt`).
-2. Run `Create Cyclo Reducer` from the CycloSketch command UI.
-3. Fill `Necessary param`, `optionary param`, and `Detailed setting`.
-4. Click `Generate`.
-
-## UI Preview Images
-
-Place preview PNG files in:
-
-- `src/CycloSketchAddin/assets`
-
-Supported names:
-
-- `cyclo_Discription_Image_nec.png`
-- `cyclo_Discription_Image_opt.png`
-- `preview_necessary_params.png`
-- `preview_optional_params.png`
-- `preview_detailed_settings.png`
-
-These files are copied to output automatically during build.
-
-## Troubleshooting
-
-### Add-in not visible in SolidWorks Add-Ins list
-
-1. Run PowerShell as Administrator.
-2. Re-run registration with `install_addin.ps1`.
-3. Restart SolidWorks.
-
-### Build fails with MSB3021/MSB3027 (locked DLL)
-
-SolidWorks is still running and locking the DLL.
-
-1. Close SolidWorks.
-2. Rebuild.
-3. Redeploy.
-
-Or force close from deploy script:
-
-```powershell
+Set-Location G:\SolidWorksCycloidalAddin
 powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
 ```
 
-### Images still do not appear
+Ce script fait automatiquement:
 
-1. Verify files exist in `src/CycloSketchAddin/assets`.
-2. Rebuild in `Release`.
-3. Confirm copied files exist in `src/CycloSketchAddin/bin/Release/net48/assets`.
-4. Redeploy and restart SolidWorks.
+- Build en `Release`
+- Enregistrement de `CycloSketchAddin.dll` via `RegAsm`
 
-## Development Notes
+## Activation dans SolidWorks
 
-- Primary add-in entry: `src/CycloSketchAddin/Addin/SwAddin.cs`
-- Sketch generation logic: `src/CycloSketchAddin/SolidWorks/SketchGenerator.cs`
-- Geometry and validation: `src/CycloSketchAddin/Core`
-- UI: `src/CycloSketchAddin/UI/CycloPropertyManagerPage.cs`
+1. Ouvrir SolidWorks.
+2. Aller dans `Tools > Add-Ins`.
+3. Cocher `CycloSketch Add-In`.
+4. Cocher aussi `Start Up` si vous voulez le chargement automatique au demarrage.
 
-## Contributing
+## Installation manuelle (alternative)
 
-Contributions are welcome.
+Si vous ne souhaitez pas utiliser `deploy_addin.ps1`:
 
-1. Fork the repository.
-2. Create a feature branch.
-3. Add focused commits with clear messages.
-4. Open a pull request with screenshots and test notes.
+1. Build du projet:
 
-Recommended PR checklist:
+```powershell
+Set-Location G:\SolidWorksCycloidalAddin\src\CycloSketchAddin
+dotnet build -c Release --nologo
+```
 
-- Build succeeds in `Release`
-- Add-in registers and loads in SolidWorks
-- Sketch naming remains stable
-- UI remains usable at 100% and 125% display scale
+2. Enregistrement COM de la DLL (PowerShell Admin):
 
-## Roadmap
+```powershell
+Set-Location G:\SolidWorksCycloidalAddin
+powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath ".\src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll"
+```
 
-- Preset save/load
-- Language toggle (EN/FR)
-- DXF export helper
-- Advanced PropertyManagerPage parity
-- Optional automated 3D feature generation
+## Mise a jour de l'add-in
 
-## License
+Apres modification du code:
 
-Open-source community project.
+```powershell
+Set-Location G:\SolidWorksCycloidalAddin
+powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
+```
 
-Recommended: MIT License (add a `LICENSE` file in repository root if not present).
+## Desinstallation
+
+```powershell
+Set-Location G:\SolidWorksCycloidalAddin
+powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath ".\src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll" -Unregister
+```
+
+## Utilisation
+
+1. Ouvrir une piece (`.sldprt`).
+2. Lancer la commande `Create Cyclo Reducer`.
+3. Renseigner les onglets de parametres.
+4. Cliquer `Generate`.
+
+## Depannage
+
+### L'add-in n'apparait pas dans la liste Add-Ins
+
+1. Verifier que PowerShell a ete lance en Administrateur.
+2. Relancer l'installation manuelle (`install_addin.ps1`).
+3. Redemarrer SolidWorks.
+
+### Echec de build avec DLL verrouillee (MSB3021 / MSB3027)
+
+SolidWorks verrouille la DLL.
+
+1. Fermer SolidWorks.
+2. Refaire le deploiement avec `-KillSolidWorks`.
+
+### RegAsm introuvable
+
+Installer le `.NET Framework 4.8 Developer Pack`, puis relancer la commande d'installation.
+
+## Arborescence utile
+
+- `src/CycloSketchAddin/CycloSketchAddin.csproj`
+- `src/CycloSketchAddin/Addin/SwAddin.cs`
+- `src/CycloSketchAddin/Addin/CommandManagerService.cs`
+- `install_addin.ps1`
+- `deploy_addin.ps1`
