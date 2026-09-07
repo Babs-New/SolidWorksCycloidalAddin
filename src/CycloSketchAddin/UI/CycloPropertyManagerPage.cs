@@ -25,7 +25,14 @@ public sealed class CycloPropertyManagerPage
     {
         if (_activeForm != null && !_activeForm.IsDisposed)
         {
-            ShowAndFocusForm(_activeForm);
+            if (_activeForm.WindowState == FormWindowState.Minimized)
+                _activeForm.WindowState = FormWindowState.Normal;
+
+            if (!_activeForm.Visible)
+                _activeForm.Show();
+
+            _activeForm.BringToFront();
+            _activeForm.Activate();
             return;
         }
 
@@ -361,40 +368,7 @@ public sealed class CycloPropertyManagerPage
         form.Controls.Add(header);
         form.Controls.Add(panel);
 
-        ShowAndFocusForm(form);
-    }
-
-    private static void ShowAndFocusForm(Form form)
-    {
-        void showImpl()
-        {
-            if (form.IsDisposed) return;
-
-            if (form.WindowState == FormWindowState.Minimized)
-                form.WindowState = FormWindowState.Normal;
-
-            if (!form.Visible)
-                form.Show();
-
-            form.BringToFront();
-            form.Activate();
-        }
-
-        if (form.IsHandleCreated && form.InvokeRequired)
-        {
-            try
-            {
-                form.BeginInvoke((Action)showImpl);
-            }
-            catch
-            {
-                // If invoking fails, the next button click will retry with a fresh callback cycle.
-            }
-
-            return;
-        }
-
-        showImpl();
+        form.Show();
     }
 
     private static void DrawTabHeader(TabControl tabs, DrawItemEventArgs e)
