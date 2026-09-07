@@ -7,10 +7,10 @@ This README is focused on installation, so any user can deploy the add-in and en
 ## Required prerequisites
 
 - Windows 10/11 x64
-- SolidWorks x64
-- .NET SDK 8.x
-- .NET Framework 4.8 Developer Pack (includes RegAsm)
-- PowerShell 5.1+
+- SolidWorks x64 ([official page](https://www.solidworks.com/))
+- .NET SDK 8.x ([download](https://dotnet.microsoft.com/en-us/download/dotnet/8.0))
+- .NET Framework 4.8 Developer Pack (includes RegAsm) ([download](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48))
+- PowerShell 5.1+ ([Windows PowerShell 5.1 info](https://learn.microsoft.com/en-us/powershell/scripting/windows-powershell/wmf-overview))
 - Windows Administrator rights (required for COM registration)
 
 ## Verify prerequisites
@@ -39,8 +39,7 @@ The command should return `True`.
 4. Run the deployment script.
 
 ```powershell
-$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
-Set-Location $RepoRoot
+Set-Location <your_repo_folder> ## Ex: "C:\path\to\SolidWorksCycloidalAddin"
 powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
 ```
 
@@ -48,6 +47,22 @@ This script automatically:
 
 - Builds in `Release`
 - Registers `CycloSketchAddin.dll` using `RegAsm`
+
+## Execution command (short version)
+
+Use this command whenever you want to build and register the add-in in one step:
+
+```powershell
+Set-Location <your_repo_folder>
+powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
+```
+
+Example:
+
+```powershell
+Set-Location D:\SolidWorksCycloidalAddin
+powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
+```
 
 ## Enable in SolidWorks
 
@@ -63,7 +78,7 @@ If you do not want to use `deploy_addin.ps1`:
 1. Build the project:
 
 ```powershell
-$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+$RepoRoot = "<your_repo_folder>"
 Set-Location (Join-Path $RepoRoot "src\CycloSketchAddin")
 dotnet build -c Release --nologo
 ```
@@ -71,7 +86,7 @@ dotnet build -c Release --nologo
 2. Register the DLL for COM (PowerShell as Administrator):
 
 ```powershell
-$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+$RepoRoot = "<your_repo_folder>"
 Set-Location $RepoRoot
 powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath (Join-Path $RepoRoot "src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll")
 ```
@@ -81,15 +96,14 @@ powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath (Join-Path
 After code changes:
 
 ```powershell
-$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
-Set-Location $RepoRoot
+Set-Location <your_repo_folder>
 powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
 ```
 
 ## Uninstall
 
 ```powershell
-$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+$RepoRoot = "<your_repo_folder>"
 Set-Location $RepoRoot
 powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath (Join-Path $RepoRoot "src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll") -Unregister
 ```
@@ -156,7 +170,7 @@ This is often a stale SolidWorks CommandManager cache or a command ID collision.
 2. Re-run deployment:
 
 ```powershell
-$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+$RepoRoot = "<your_repo_folder>"
 Set-Location $RepoRoot
 powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
 ```
