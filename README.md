@@ -1,121 +1,121 @@
 # CycloSketch Add-In for SolidWorks
 
-Add-in SolidWorks pour generer des esquisses de reducteur cycloidal a partir de parametres.
+SolidWorks add-in to generate cycloidal reducer sketches from parameters.
 
-Ce README est centre sur l'installation, afin qu'un utilisateur puisse deployer l'add-in et l'activer dans SolidWorks.
+This README is focused on installation, so any user can deploy the add-in and enable it in SolidWorks.
 
-## Prerequis obligatoires
+## Required prerequisites
 
 - Windows 10/11 x64
 - SolidWorks 2025 x64
 - .NET SDK 8.x
-- .NET Framework 4.8 Developer Pack (inclut RegAsm)
+- .NET Framework 4.8 Developer Pack (includes RegAsm)
 - PowerShell 5.1+
-- Droits Administrateur Windows (necessaire pour l'enregistrement COM)
+- Windows Administrator rights (required for COM registration)
 
-## Verifier les prerequis
+## Verify prerequisites
 
-Dans PowerShell:
+In PowerShell:
 
 ```powershell
 dotnet --info
 ```
 
-La commande doit repondre avec un SDK 8.x installe.
+The command should report an installed 8.x SDK.
 
-Verifier RegAsm:
+Check RegAsm:
 
 ```powershell
 Test-Path "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\RegAsm.exe"
 ```
 
-La commande doit retourner `True`.
+The command should return `True`.
 
-## Installation rapide (recommandee)
+## Quick install (recommended)
 
-1. Fermer SolidWorks.
-2. Ouvrir PowerShell en Administrateur.
-3. Aller a la racine du projet.
-4. Lancer le script de deploiement.
+1. Close SolidWorks.
+2. Open PowerShell as Administrator.
+3. Go to the project root.
+4. Run the deployment script.
 
 ```powershell
 Set-Location G:\SolidWorksCycloidalAddin
 powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
 ```
 
-Ce script fait automatiquement:
+This script automatically:
 
-- Build en `Release`
-- Enregistrement de `CycloSketchAddin.dll` via `RegAsm`
+- Builds in `Release`
+- Registers `CycloSketchAddin.dll` using `RegAsm`
 
-## Activation dans SolidWorks
+## Enable in SolidWorks
 
-1. Ouvrir SolidWorks.
-2. Aller dans `Tools > Add-Ins`.
-3. Cocher `CycloSketch Add-In`.
-4. Cocher aussi `Start Up` si vous voulez le chargement automatique au demarrage.
+1. Open SolidWorks.
+2. Go to `Tools > Add-Ins`.
+3. Enable `CycloSketch Add-In`.
+4. Also enable `Start Up` if you want automatic loading at launch.
 
-## Installation manuelle (alternative)
+## Manual install (alternative)
 
-Si vous ne souhaitez pas utiliser `deploy_addin.ps1`:
+If you do not want to use `deploy_addin.ps1`:
 
-1. Build du projet:
+1. Build the project:
 
 ```powershell
 Set-Location G:\SolidWorksCycloidalAddin\src\CycloSketchAddin
 dotnet build -c Release --nologo
 ```
 
-2. Enregistrement COM de la DLL (PowerShell Admin):
+2. Register the DLL for COM (PowerShell as Administrator):
 
 ```powershell
 Set-Location G:\SolidWorksCycloidalAddin
 powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath ".\src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll"
 ```
 
-## Mise a jour de l'add-in
+## Update the add-in
 
-Apres modification du code:
+After code changes:
 
 ```powershell
 Set-Location G:\SolidWorksCycloidalAddin
 powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
 ```
 
-## Desinstallation
+## Uninstall
 
 ```powershell
 Set-Location G:\SolidWorksCycloidalAddin
 powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath ".\src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll" -Unregister
 ```
 
-## Utilisation
+## Usage
 
-1. Ouvrir une piece (`.sldprt`).
-2. Lancer la commande `Create Cyclo Reducer`.
-3. Renseigner les onglets de parametres.
-4. Cliquer `Generate`.
+1. Open a Part document (`.sldprt`).
+2. Run the `Create Cyclo Reducer` command.
+3. Fill in the parameter tabs.
+4. Click `Generate`.
 
-## Depannage
+## Troubleshooting
 
-### L'add-in n'apparait pas dans la liste Add-Ins
+### Add-in does not appear in the Add-Ins list
 
-1. Verifier que PowerShell a ete lance en Administrateur.
-2. Relancer l'installation manuelle (`install_addin.ps1`).
-3. Redemarrer SolidWorks.
+1. Make sure PowerShell was launched as Administrator.
+2. Re-run manual installation (`install_addin.ps1`).
+3. Restart SolidWorks.
 
-### Echec de build avec DLL verrouillee (MSB3021 / MSB3027)
+### Build fails with locked DLL (MSB3021 / MSB3027)
 
-SolidWorks verrouille la DLL.
+SolidWorks is locking the DLL.
 
-1. Fermer SolidWorks.
-2. Refaire le deploiement avec `-KillSolidWorks`.
+1. Close SolidWorks.
+2. Re-run deployment with `-KillSolidWorks`.
 
-### RegAsm introuvable
+### RegAsm not found
 
-Installer le `.NET Framework 4.8 Developer Pack`, puis relancer la commande d'installation.
+Install the `.NET Framework 4.8 Developer Pack`, then run the install command again.
 
-## Arborescence utile
+## Useful project paths
 
 - `src/CycloSketchAddin/CycloSketchAddin.csproj`
 - `src/CycloSketchAddin/Addin/SwAddin.cs`
