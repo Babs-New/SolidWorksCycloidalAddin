@@ -51,13 +51,10 @@ public sealed class CycloPropertyManagerPage
             BackColor = Color.FromArgb(244, 247, 252)
         };
         _activeForm = form;
-        form.FormClosing += (_, e) =>
+        form.FormClosed += (_, _) =>
         {
-            if (e.CloseReason == CloseReason.UserClosing)
-            {
-                e.Cancel = true;
-                form.Hide();
-            }
+            _activeForm = null;
+            form.Dispose();
         };
 
         var appIcon = AppWindowIcon.TryGetIcon();
