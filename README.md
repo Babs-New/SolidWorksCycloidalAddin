@@ -7,7 +7,7 @@ This README is focused on installation, so any user can deploy the add-in and en
 ## Required prerequisites
 
 - Windows 10/11 x64
-- SolidWorks 2025 x64
+- SolidWorks x64
 - .NET SDK 8.x
 - .NET Framework 4.8 Developer Pack (includes RegAsm)
 - PowerShell 5.1+
@@ -35,11 +35,12 @@ The command should return `True`.
 
 1. Close SolidWorks.
 2. Open PowerShell as Administrator.
-3. Go to the project root.
+3. Go to the project root (folder containing `deploy_addin.ps1`).
 4. Run the deployment script.
 
 ```powershell
-Set-Location G:\SolidWorksCycloidalAddin
+$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+Set-Location $RepoRoot
 powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
 ```
 
@@ -62,15 +63,17 @@ If you do not want to use `deploy_addin.ps1`:
 1. Build the project:
 
 ```powershell
-Set-Location G:\SolidWorksCycloidalAddin\src\CycloSketchAddin
+$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+Set-Location (Join-Path $RepoRoot "src\CycloSketchAddin")
 dotnet build -c Release --nologo
 ```
 
 2. Register the DLL for COM (PowerShell as Administrator):
 
 ```powershell
-Set-Location G:\SolidWorksCycloidalAddin
-powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath ".\src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll"
+$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+Set-Location $RepoRoot
+powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath (Join-Path $RepoRoot "src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll")
 ```
 
 ## Update the add-in
@@ -78,15 +81,17 @@ powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath ".\src\Cyc
 After code changes:
 
 ```powershell
-Set-Location G:\SolidWorksCycloidalAddin
+$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+Set-Location $RepoRoot
 powershell -ExecutionPolicy Bypass -File .\deploy_addin.ps1 -KillSolidWorks
 ```
 
 ## Uninstall
 
 ```powershell
-Set-Location G:\SolidWorksCycloidalAddin
-powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath ".\src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll" -Unregister
+$RepoRoot = "C:\path\to\SolidWorksCycloidalAddin"
+Set-Location $RepoRoot
+powershell -ExecutionPolicy Bypass -File .\install_addin.ps1 -DllPath (Join-Path $RepoRoot "src\CycloSketchAddin\bin\Release\net48\CycloSketchAddin.dll") -Unregister
 ```
 
 ## Usage
