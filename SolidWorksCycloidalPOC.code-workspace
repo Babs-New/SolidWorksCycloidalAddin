@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../SolidWorksCycloidalPOC"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"powershell.cwd": "SolidWorksCycloidalAddin"
+	}
+}
